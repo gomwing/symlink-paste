@@ -11,6 +11,21 @@
 
 enum PasteErrors { None = 0, InvalidClipboard, TooManyFiles, FileAlreadyExists, UnknownError };
 
+#ifdef _UNICODE 
+#ifdef DEBUG
+#define _msg(txt) ::MessageBox(NULL, (LPCWSTR)txt, (LPCWSTR)L"WC warning", MB_ICONWARNING | MB_CANCELTRYCONTINUE | MB_DEFBUTTON2)
+#define _dbg(txt) OutputDebugString(_T(txt))
+#define _dbgW(txt) OutputDebugStringW(txt)
+#else
+#define _msg(txt) 
+#define _dbg(txt) 
+#define _dbgW(txt)
+#endif
+#else
+#define _msg(txt) ::MessageBox(NULL, (LPCWSTR)_T(txt), (LPCWSTR)L"WC warning", MB_ICONWARNING | MB_CANCELTRYCONTINUE | MB_DEFBUTTON2)
+#define _dbg(txt) OutputDebugStringA(txt)
+#endif
+
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	PasteErrors error = None;
@@ -84,12 +99,37 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		if (!PathIsRelative(sourceName) && PathFileExists(sourceName))
 		{
 			wchar_t targetName[MAX_PATH];
+			wchar_t targetPath[MAX_PATH];
+
+			StringCchCopy(targetPath, MAX_PATH, lpCmdLine);
 			StringCchCopy(targetName, MAX_PATH, sourceName);
 			PathStripPath(targetName);
 
-			if (!PathFileExists(targetName))
+			//StringCchCat(targetPath, MAX_PATH, targetName);
+
+
+
+			_msg(__wargv[1]);
+
+#if 0
+			if (!SetCurrentDirectory(targetPath))
 			{
-				if (!CreateSymbolicLink(targetName, sourceName, PathIsDirectory(sourceName) ? SYMBOLIC_LINK_FLAG_DIRECTORY : NULL))
+				wchar_t error[MAX_PATH];
+				wsprintf(error, _T("SetCurrentDirectory failed (%d)\n"), GetLastError());
+				_msg(error);
+
+				return 0;
+			}
+			if (!PathFileExists(targetName))
+#else
+			StringCchCopy(targetPath, MAX_PATH, __wargv[1]);
+			StringCchCat(targetPath, MAX_PATH, L"\\");
+			StringCchCat(targetPath, MAX_PATH, targetName);
+
+			if (!PathFileExists(targetPath))
+#endif
+			{
+				if (!CreateSymbolicLink(targetPath, sourceName, PathIsDirectory(sourceName) ? SYMBOLIC_LINK_FLAG_DIRECTORY : NULL))
 				{
 					error = UnknownError;
 				}
