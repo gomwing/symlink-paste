@@ -12,7 +12,7 @@
 enum PasteErrors { None = 0, InvalidClipboard, TooManyFiles, FileAlreadyExists, UnknownError };
 
 #ifdef _UNICODE 
-#ifdef DEBUG
+#ifdef _DEBUG
 #define _msg(txt) ::MessageBox(NULL, (LPCWSTR)txt, (LPCWSTR)L"WC warning", MB_ICONWARNING | MB_CANCELTRYCONTINUE | MB_DEFBUTTON2)
 #define _dbg(txt) OutputDebugString(_T(txt))
 #define _dbgW(txt) OutputDebugStringW(txt)
